@@ -17,10 +17,13 @@ jobs:
       matrix:
         ros_distribution:
           - humble
+          - foxy
         include:
-          # Humble Hawksbill (May 2022 - May 2027)
           - docker_image: rostooling/setup-ros-docker:ubuntu-jammy-ros-humble-ros-base-latest
             ros_distribution: humble
+            ros_version: 2
+          - docker_image: rostooling/setup-ros-docker:ubuntu-focal-ros-foxy-ros-base-latest
+            ros_distribution: foxy
             ros_version: 2
     container:
       image: ${{ matrix.docker_image }}
@@ -29,9 +32,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Set ROS_DISTRO environment variable
+        run: echo "ROS_DISTRO=${{ matrix.ros_distribution }}" >> $GITHUB_ENV
       - name: Setup dependencies
         run: |
-          echo $ROS_DISTRO
+          sudo apt update
+          sudo apt install -y libusb-dev ros-$ROS_DISTRO-perception-pcl ros-$ROS_DISTRO-sensor-msgs-py ros-$ROS_DISTRO-tf-transformations ros-$ROS_DISTRO-joy ros-$ROS_DISTRO-rmw-cyclonedds-cpp ros-$ROS_DISTRO-rosidl-generator-dds-idl python3-colcon-common-extensions python-is-python3
+          pip install transforms3d pyyaml          
+      - name: Setup dependencies
+        run: |
+          export ROS_DISTRO=
           sudo apt update
           sudo apt install -y libusb-dev ros-humble-perception-pcl ros-humble-sensor-msgs-py ros-humble-tf-transformations ros-humble-joy ros-humble-rmw-cyclonedds-cpp ros-humble-rosidl-generator-dds-idl ros-humble-tf2-sensor-msgs python3-colcon-common-extensions python-is-python3
           pip install transforms3d pyyaml          
